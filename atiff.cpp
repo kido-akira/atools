@@ -33,14 +33,14 @@ inline void ERRMSG(const char* fmt, ...) {
 #define ATIFF_TAG_CONCAT(label) TIFFTAG_ ## label
 #define ATIFF_GET_SAFE(label, var)\
     if(TIFFGetField(tif, ATIFF_TAG_CONCAT(label), &var) != 1) {\
-    fprintf(stderr, "%s: cannot get %s\n",\
-            filename.c_str(), ATIFF_STR(label));        \
+        fprintf(stderr, "%s: cannot get %s\n",\
+                filename.c_str(), ATIFF_STR(label));\
         return false;\
     }
 #define ATIFF_SET_SAFE(label, var)\
-    if(TIFFSetField(tif, ATIFF_TAG_CONCAT(label), var) != 1) {\
+    if(TIFFSetField(tif, ATIFF_TAG_CONCAT(label),  var) != 1) {\
         fprintf(stderr, "%s: cannot set %s\n",\
-                filename.c_str(), ATIFF_STR(label));    \
+                filename.c_str(), ATIFF_STR(label));\
         return false;\
     }
 
