@@ -7,50 +7,50 @@
 #include <string>
 #include <vector>
 
-#define ATIFF_1BIT_DEPTH        1  // 2ŠK’²(”’•2’l)
-#define ATIFF_8BIT_DEPTH        8  // 256ŠK’²
-#define ATIFF_ORDER_NONE         0 // 1ƒvƒŒ[ƒ“
-#define ATIFF_PLANE_MAJOR       +1 // ƒsƒNƒZƒ‹–ˆ‚ÉŠi”[(plane-major)
-#define ATIFF_PIXEL_MAJOR       -1 // ƒvƒŒ[ƒ“–ˆ‚ÉŠi”[(pixel-major)
+#define ATIFF_1BIT_DEPTH        1  // 2éšèª¿(ç™½é»’2å€¤)
+#define ATIFF_8BIT_DEPTH        8  // 256éšèª¿
+#define ATIFF_ORDER_NONE         0 // 1ãƒ—ãƒ¬ãƒ¼ãƒ³
+#define ATIFF_PLANE_MAJOR       +1 // ãƒ”ã‚¯ã‚»ãƒ«æ¯ã«æ ¼ç´(plane-major)
+#define ATIFF_PIXEL_MAJOR       -1 // ãƒ—ãƒ¬ãƒ¼ãƒ³æ¯ã«æ ¼ç´(pixel-major)
 
 // see tiff.h
 #define ABYTE                      unsigned char
 #define AINT16                     unsigned short
 #define AINT32                     unsigned int
 #define AFLOAT                     float
-#define APHOTOMETRIC_MINISWHITE    0 // 0‚ª”’AÅ‘å‚ª•
-#define APHOTOMETRIC_MINISBLACK    1 // 0‚ª•AÅ‘å‚ª”’
+#define APHOTOMETRIC_MINISWHITE    0 // 0ãŒç™½ã€æœ€å¤§ãŒé»’
+#define APHOTOMETRIC_MINISBLACK    1 // 0ãŒé»’ã€æœ€å¤§ãŒç™½
 #define APHOTOMETRIC_RGB           2 // RGB or RGBA
 #define APHOTOMETRIC_SEPARATED     5 // CMYK
-#define ACOMPRESSION_NONE          1 // –³ˆ³k(ƒ_ƒ“ƒvƒ‚[ƒh)
-#define ACOMPRESSION_LZW           5 // Lempel-Ziv & Welchˆ³k
+#define ACOMPRESSION_NONE          1 // ç„¡åœ§ç¸®(ãƒ€ãƒ³ãƒ—ãƒ¢ãƒ¼ãƒ‰)
+#define ACOMPRESSION_LZW           5 // Lempel-Ziv & Welchåœ§ç¸®
 
 //----------------------------------------------------------------------
 //  ATIFF : TIFF manipulate class
 //----------------------------------------------------------------------
 class atiff {
 protected:
-    AINT16 depth_;        // ŠK’²‚Ì[‚³(ƒrƒbƒg”)
-    AINT32 width_;        // ‰æ‘œ‚Ì‰¡•(ƒsƒNƒZƒ‹”)
-    AINT32 height_;       // ‰æ‘œ‚Ì‚‚³(ƒsƒNƒZƒ‹”)
-    AINT16 ncolors_;      // F”(ƒTƒ“ƒvƒ‹”)
-    AINT16 photometric_;  // ƒJƒ‰[ƒ‚[ƒh(F•\Œ»)
-    AINT16 compression_;  // ˆ³kŒ`®
-    AINT16 orientation_;  // ‰æ‘œ‚ÌŒ´“_
-    AINT16 fillorder_;    // ƒrƒbƒgƒI[ƒ_
-    AINT16 planarmode_;   // —Dæƒ‚[ƒh(ƒf[ƒ^‚Ì•À‚Ñ‡)
-    AFLOAT xreso_;        // x•ûŒü‰ğ‘œ“x[DPI]
-    AFLOAT yreso_;        // y•ûŒü‰ğ‘œ“x[DPI]
-    AINT16 resounit_;     // ‰ğ‘œ“x‚Ì’PˆÊ
-    AINT32 rowsperstrip_; // 1ƒXƒgƒŠƒbƒv“–‚½‚è‚Ìs”
-    std::string software_;// o—Íƒ\ƒtƒgƒEƒFƒA–¼
+    AINT16 depth_;        // éšèª¿ã®æ·±ã•(ãƒ“ãƒƒãƒˆæ•°)
+    AINT32 width_;        // ç”»åƒã®æ¨ªå¹…(ãƒ”ã‚¯ã‚»ãƒ«æ•°)
+    AINT32 height_;       // ç”»åƒã®é«˜ã•(ãƒ”ã‚¯ã‚»ãƒ«æ•°)
+    AINT16 ncolors_;      // è‰²æ•°(ã‚µãƒ³ãƒ—ãƒ«æ•°)
+    AINT16 photometric_;  // ã‚«ãƒ©ãƒ¼ãƒ¢ãƒ¼ãƒ‰(è‰²è¡¨ç¾)
+    AINT16 compression_;  // åœ§ç¸®å½¢å¼
+    AINT16 orientation_;  // ç”»åƒã®åŸç‚¹
+    AINT16 fillorder_;    // ãƒ“ãƒƒãƒˆã‚ªãƒ¼ãƒ€
+    AINT16 planarmode_;   // å„ªå…ˆãƒ¢ãƒ¼ãƒ‰(ãƒ‡ãƒ¼ã‚¿ã®ä¸¦ã³é †)
+    AFLOAT xreso_;        // xæ–¹å‘è§£åƒåº¦[DPI]
+    AFLOAT yreso_;        // yæ–¹å‘è§£åƒåº¦[DPI]
+    AINT16 resounit_;     // è§£åƒåº¦ã®å˜ä½
+    AINT32 rowsperstrip_; // 1ã‚¹ãƒˆãƒªãƒƒãƒ—å½“ãŸã‚Šã®è¡Œæ•°
+    std::string software_;// å‡ºåŠ›ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢å
 
     int ordering_; // 0:single plane, +:plane-major, -:pixel-major
     int nx_;
     int ny_;
     int nc_;
 
-    std::vector<ABYTE> buf_; //•`‰æƒf[ƒ^‚ÌŠi”[ƒoƒbƒtƒ@
+    std::vector<ABYTE> buf_; //æç”»ãƒ‡ãƒ¼ã‚¿ã®æ ¼ç´ãƒãƒƒãƒ•ã‚¡
 
     void initialize();
     int index(int i, int j, int c) const {
@@ -68,7 +68,7 @@ public:
           int ncolors  = 1,
           int ordering = ATIFF_ORDER_NONE);
  // ~atiff();
-    // ƒRƒs[‰‰ZEƒ€[ƒu‰‰Z‚Ì©“®¶¬‚Ì‚½‚ß‚ÉéŒ¾‚µ‚È‚¢
+    // ã‚³ãƒ”ãƒ¼æ¼”ç®—ãƒ»ãƒ ãƒ¼ãƒ–æ¼”ç®—ã®è‡ªå‹•ç”Ÿæˆã®ãŸã‚ã«å®£è¨€ã—ãªã„
 
           ABYTE& operator[](int i)       { return buf_[i]; }
     const ABYTE& operator[](int i) const { return buf_[i]; }
