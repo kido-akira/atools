@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.0            Time-stamp: <2016-10-31 00:10:59 kido>
+//  A TIFF ver.1.0.0            Time-stamp: <2016-11-13 09:38:42 kido>
 //----------------------------------------------------------------------
 #include <cstdio>
 #include <cstdarg>
@@ -60,16 +60,18 @@ atiff::atiff(int width, int height, int ncolors, int ordering) {
 // コピー演算・ムーブ演算の自動生成のために宣言しない
 
 void atiff::initialize() {
-    depth_        = ATIFF_256LEVEL;         // 256階調
- // depth_        = ATIFF_2LEVEL;           // 2階調(白黒2値)
+    depth_        = ATIFF_8BIT_DEPTH;       // 256階調
+ // depth_        = ATIFF_1BIT_DEPTH;       // 2階調(白黒2値)
     width_        = 0;                      // 横ピクセル数
     height_       = 0;                      // 縦ピクセル数
-    ncolors_      = ATIFF_MONO_COLOR;       // グレイスケール or 白黒2値
- // ncolors_      = ATIFF_RGB_COLOR;        // RGBカラー
- // photometric_  = PHOTOMETRIC_RGB;        // RGB
-    photometric_  = PHOTOMETRIC_MINISWHITE; // 0が白、最大が黒
- // photometric_  = PHOTOMETRIC_MINISBLACK; // 0が黒、最大が白
- // compression_  = COMPRESSION_NONE;       // 無圧縮
+    ncolors_      = 1;                      // グレイスケール or 白黒2値
+ // ncolors_      = 3;                      // RGBカラー
+ // ncolors_      = 4;                      // RGBAカラー or CMYKカラー
+ // photometric_  = PHOTOMETRIC_MINISWHITE; // 0が白、最大が黒
+    photometric_  = PHOTOMETRIC_MINISBLACK; // 0が黒、最大が白
+ // photometric_  = PHOTOMETRIC_RGB;        // RGB or RGBA
+ // photometric_  = PHOTOMETRIC_SEPARATED;  // CMYK
+ // compression_  = COMPRESSION_NONE;       // 無圧縮(ダンプモード)
     compression_  = COMPRESSION_LZW;        // Lempel-Ziv & Welch圧縮
     orientation_  = ORIENTATION_TOPLEFT;    // 左上から右下へ
     fillorder_    = FILLORDER_MSB2LSB;      // 上位ビット→下位ビット
@@ -87,8 +89,8 @@ void atiff::initialize() {
 
     nx_       = 0;
     ny_       = 0;
-    nc_       = ATIFF_MONO_COLOR;           // グレイスケール or 白黒2値
-    ordering_ = 0;                          // single plane
+    nc_       = 1;
+    ordering_ = ATIFF_ORDER_NONE;
 }
 
 bool atiff::build(int width, int height, int ncolors, int ordering) {
@@ -99,21 +101,23 @@ bool atiff::build(int width, int height, int ncolors, int ordering) {
     nx_      =         width;
     ny_      =         height;
     nc_      =         ncolors;
-    if(nc_ == ATIFF_MONO_COLOR) {
-        photometric_  = PHOTOMETRIC_MINISWHITE;
+    if(nc_ == 1) {
+        photometric_  = PHOTOMETRIC_MINISBLACK;
         planarmode_   = PLANARCONFIG_CONTIG;
-        ordering_     =  0; //single plane
-    } else if(nc_ == ATIFF_RGB_COLOR) {
-        photometric_ = PHOTOMETRIC_RGB;
-        if(ordering == ATIFF_PLANE_MAJOR) {
+        ordering_     =  ATIFF_ORDER_NONE;
+    } else if(nc_ == 3||nc_ == 4) {
+        photometric_  = PHOTOMETRIC_RGB;
+        ordering_     = ordering;
+        if       (ordering == ATIFF_PLANE_MAJOR) {
             planarmode_   = PLANARCONFIG_CONTIG;
-            ordering_     = ATIFF_PLANE_MAJOR;
-        } else {
+        } else if(ordering == ATIFF_PIXEL_MAJOR) {
             planarmode_   = PLANARCONFIG_SEPARATE;
-            ordering_     = ATIFF_PIXEL_MAJOR;
+        } else {
+            ERRMSG("%d: unsupported ordering", ordering);
+            return false;
         }
     } else {
-        ERRMSG("%d: ncolors is invalid", ncolors);
+        ERRMSG("%d: unsupported ncolors", ncolors);
         return false;
     }
     if((int)buf_.size() != nx_*ny_*nc_) buf_.resize(nx_*ny_*nc_);
@@ -134,7 +138,8 @@ bool atiff::load(string filename) {
     ATIFF_GET_SAFE(PHOTOMETRIC,     photometric_);
     if((photometric_ != PHOTOMETRIC_MINISWHITE)&&
        (photometric_ != PHOTOMETRIC_MINISBLACK)&&
-       (photometric_ != PHOTOMETRIC_RGB)) {
+       (photometric_ != PHOTOMETRIC_RGB)&&
+       (photometric_ != PHOTOMETRIC_SEPARATED)) {
         ERRMSG("%s: unsupported PHOTOMETRIC type '%u'",
                filename.c_str(), photometric_);
         return false;
@@ -168,12 +173,12 @@ bool atiff::load(string filename) {
     // 優先モード(データの並び順)
     ATIFF_GET_SAFE(PLANARCONFIG,    planarmode_ );
     if(nc_ == 1) {
-        ordering_ =  0; //single plane
+        ordering_ =  ATIFF_ORDER_NONE;
     } else {
         if(planarmode_ == PLANARCONFIG_CONTIG) {
-            ordering_ = +1; //plane-major
+            ordering_ = ATIFF_PLANE_MAJOR;
         } else {
-            ordering_ = -1; //pixel-major
+            ordering_ = ATIFF_PIXEL_MAJOR;
         }
     }
     // x方向解像度[DPI]
@@ -194,16 +199,13 @@ bool atiff::load(string filename) {
     int jstep = (int)rowsperstrip_;
 
     // 描画データの読み込み
-    if(depth_ == ATIFF_2LEVEL) {
-        if(nx_ % 8 != 0) {
-            ERRMSG("%d: width must be multiples of 8", nx_);
+    if((int)buf_.size() != nx_*ny_*nc_) buf_.resize(nx_*ny_*nc_);
+    if(ordering_ < 0) { //pixel-major
+        if(depth_ == ATIFF_1BIT_DEPTH) {
+            ERRMSG("%s: 1-bit depth is invalid in pixel-major mode",
+                   filename.c_str());
             return false;
         }
-        buf_.resize(nx_*ny_*nc_/8);
-    } else {
-        buf_.resize(nx_*ny_*nc_);
-    }
-    if(ordering_ < 0) { //pixel-major
         for(int c = 0; c < nc_; ++c) {
             for(int j = 0; j < ny_; j += jstep) {
                 int nrow = (j + jstep > ny_) ? ny_ - j : jstep;
@@ -217,13 +219,31 @@ bool atiff::load(string filename) {
             }
         }
     } else { //plane-major
-        {
+        if(depth_ == ATIFF_1BIT_DEPTH) {
+            const int nx8 = (nx_ + 7) / 8;
+            vector<ABYTE> tmp(nx8*ny_*nc_);
+            for(int j = 0; j < ny_; j += jstep) {
+                int nrow = (j + jstep > ny_) ? ny_ - j : jstep;
+                tstrip_t   pos = TIFFComputeStrip(tif, j, 0);
+                tdata_t    ptr = (tdata_t)(&tmp[nx8*j]);
+                tsize_t length = (tsize_t)(nx8*nrow);
+                if(TIFFReadEncodedStrip(tif, pos, ptr, length) == -1) {
+                    ERRMSG("%s: data read error", filename.c_str());
+                    return false;
+                }
+            }
+            for(int j = 0; j < ny_; ++j) {
+            for(int i = 0; i < nx_; ++i) {
+                const ATIFF_BYTE unity = 0x80 >> (i % 8); //MSB2LSB
+                buf_[i + j*nx_] = (tmp[i/8 + j*nx8] & unity) ? 0xFF : 0;
+            }
+            }
+        } else {
             for(int j = 0; j < ny_; j += jstep) {
                 int nrow = (j + jstep > ny_) ? ny_ - j : jstep;
                 tstrip_t   pos = TIFFComputeStrip(tif, j, 0);
                 tdata_t    ptr = (tdata_t)(&buf_[index(0, j, 0)]);
                 tsize_t length = (tsize_t)index(0, nrow, 0);
-                if(depth_ == ATIFF_2LEVEL) length /= 8;
                 if(TIFFReadEncodedStrip(tif, pos, ptr, length) == -1) {
                     ERRMSG("%s: data read error", filename.c_str());
                     return false;
@@ -236,7 +256,8 @@ bool atiff::load(string filename) {
     return true;
 }
 
-bool atiff::save(string filename) const {
+bool atiff::save(string filename, int depth) const {
+    if(depth) depth_ = depth;
     // 書き込みモードでTIFFファイルを開く
     TIFF* tif = TIFFOpen(filename.c_str(), "w");
     if(tif == NULL) {
@@ -273,19 +294,39 @@ bool atiff::save(string filename) const {
 
     // 描画データの書き込み
     if(ordering_ < 0) { //pixel-major
+        if(depth_ == ATIFF_1BIT_DEPTH) {
+            ERRMSG("%s: 1-bit depth is invalid in pixel-major mode",
+                   filename.c_str());
+            return false;
+        }
         for(int c = 0; c < nc_; ++c) {
             tdata_t    ptr = (tdata_t)(&buf_[index(0, 0, c)]);
-            tsize_t length = (tsize_t)(nx_ * ny_);
+            tsize_t length = (tsize_t)index(0, ny_, 0);
             if(TIFFWriteEncodedStrip(tif, c, ptr, length) == -1) {
                 ERRMSG("%s: data write error", filename.c_str());
                 return false;
             }
         }
     } else { //plane-major
-        {
+        if(depth_ == ATIFF_1BIT_DEPTH) {
+            const int nx8 = (nx_ + 7) / 8;
+            vector<ABYTE> tmp(nx8*ny_*nc_, 0);
+            for(int j = 0; j < ny_; ++j) {
+            for(int i = 0; i < nx_; ++i) {
+                if(buf_[i + j*nx_] == 0) continue;
+                const ATIFF_BYTE unity = 0x80 >> (i % 8); //MSB2LSB
+                tmp[i/8 + j*nx8] |= unity;
+            }
+            }
+            tdata_t    ptr = (tdata_t)(&tmp[0]);
+            tsize_t length = (tsize_t)tmp.size();
+            if(TIFFWriteEncodedStrip(tif, 0, ptr, length) == -1) {
+                ERRMSG("%s: data write error", filename.c_str());
+                return false;
+            }
+        } else {
             tdata_t    ptr = (tdata_t)(&buf_[0]);
-            tsize_t length = (tsize_t)(nx_ * ny_ * nc_);
-            if(depth_ == ATIFF_2LEVEL) length /= 8;
+            tsize_t length = (tsize_t)buf_.size();
             if(TIFFWriteEncodedStrip(tif, 0, ptr, length) == -1) {
                 ERRMSG("%s: data write error", filename.c_str());
                 return false;
