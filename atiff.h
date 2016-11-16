@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.0            Time-stamp: <2016-11-15 05:50:06 kido>
+//  A TIFF ver.1.0.0            Time-stamp: <2016-11-17 03:43:27 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -72,6 +72,7 @@ public:
           int height,
           int ncolors  = 1,
           int ordering = ATIFF_ORDER_NONE);
+    atiff(std::string filename);
  // ~atiff();
     // コピー演算・ムーブ演算の自動生成のために宣言しない
 
@@ -85,7 +86,7 @@ public:
     }
 
     bool load(std::string filename);
-    bool save(std::string filename, int depth = 0) const;
+    bool save(std::string filename, int depth = 0, int compression = 0) const;
     bool build(int width,
                int height,
                int ncolors  = 1,

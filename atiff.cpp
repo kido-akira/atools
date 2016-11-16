@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.0            Time-stamp: <2016-11-15 05:49:35 kido>
+//  A TIFF ver.1.0.0            Time-stamp: <2016-11-17 03:47:49 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -60,6 +60,11 @@ atiff::atiff(int width, int height, int ncolors, int ordering) {
     this->build(width, height, ncolors, ordering);
 }
 
+atiff::atiff(string filename) {
+    this->initialize();
+    this->load(filename);
+}
+
 // atiff::~atiff() {
 // }
 // コピー演算・ムーブ演算の自動生成のために宣言しない
@@ -90,7 +95,7 @@ void atiff::initialize() {
     resounit_     = RESUNIT_INCH;           // インチ
  // resounit_     = RESUNIT_CENTIMETER;     // センチメートル
     software_     = "atiff_powerdby_libtiff";
-    rowsperstrip_ = 1;                      // 1ストリップ当たりの行数
+    rowsperstrip_ = 0x0fffffff;             // 1ストリップ当たりの行数、正しくは2^32-1
 
     nx_       = 0;
     ny_       = 0;
@@ -167,7 +172,7 @@ bool atiff::load(string filename) {
         return false;
     }
     // 画像原点の取得
-    ATIFF_GET_SAFE(ORIENTATION,     orientation_);
+ // ATIFF_GET_SAFE(ORIENTATION,     orientation_);
     if(orientation_ != ORIENTATION_TOPLEFT) {
         ERRMSG("%s: unsupported ORIENTATION type '%u'",
                filename.c_str(), orientation_);
@@ -199,7 +204,7 @@ bool atiff::load(string filename) {
 
     // 1ストリップ当たりの行数
     if(TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rowsperstrip_) != 1) {
-        rowsperstrip_ = 1;
+        rowsperstrip_ = 0x0fffffff; //正しくは2^32-1、圧縮書き込み時に省略される
     }
     int jstep = (int)rowsperstrip_;
 
@@ -261,8 +266,9 @@ bool atiff::load(string filename) {
     return true;
 }
 
-bool atiff::save(string filename, int depth) const {
-    if(depth) depth_ = depth;
+bool atiff::save(string filename, int depth, int compression) const {
+    if(depth       == 0) depth       = depth_;
+    if(compression == 0) compression = compression_;
     // 書き込みモードでTIFFファイルを開く
     TIFF* tif = TIFFOpen(filename.c_str(), "w");
     if(tif == NULL) {
@@ -271,7 +277,7 @@ bool atiff::save(string filename, int depth) const {
     }
 
     // 階調の深さ(ビット数)
-    ATIFF_SET_SAFE(BITSPERSAMPLE,   depth_      );
+    ATIFF_SET_SAFE(BITSPERSAMPLE,   depth       );
     // カラーモード(色表現)
     ATIFF_SET_SAFE(PHOTOMETRIC,     photometric_);
     // 画像の横幅(ピクセル数)
@@ -281,7 +287,7 @@ bool atiff::save(string filename, int depth) const {
     // 色数(サンプル数)
     ATIFF_SET_SAFE(SAMPLESPERPIXEL, ncolors_    );
     // 圧縮形式
-    ATIFF_SET_SAFE(COMPRESSION,     compression_);
+    ATIFF_SET_SAFE(COMPRESSION,     compression );
     // 画像の原点
     ATIFF_SET_SAFE(ORIENTATION,     orientation_);
     // ビットオーダ
