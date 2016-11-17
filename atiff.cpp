@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.1            Time-stamp: <2016-11-18 03:02:06 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2016-11-18 03:25:20 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -16,15 +16,6 @@ using namespace std;
 
 #include "atiff.h"
 
-inline void OUTMSG(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    char tmp[BUFSIZ];
-    vsnprintf(tmp, sizeof(tmp), fmt, args);
-    cout << tmp << endl;
-    va_end(args);
-}
-
 inline void ERRMSG(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -38,14 +29,14 @@ inline void ERRMSG(const char* fmt, ...) {
 #define ATIFF_TAG_CONCAT(label) TIFFTAG_ ## label
 #define ATIFF_GET_SAFE(label, var)\
     if(TIFFGetField(tif, ATIFF_TAG_CONCAT(label), &var) != 1) {\
-        fprintf(stderr, "%s: cannot get %s\n",\
-                filename.c_str(), ATIFF_STR(label));\
+        ERRMSG("%s: cannot get %s\n",\
+               filename.c_str(), ATIFF_STR(label));\
         return false;\
     }
 #define ATIFF_SET_SAFE(label, var)\
     if(TIFFSetField(tif, ATIFF_TAG_CONCAT(label),  var) != 1) {\
-        fprintf(stderr, "%s: cannot set %s\n",\
-                filename.c_str(), ATIFF_STR(label));    \
+        ERRMSG("%s: cannot set %s\n",\
+               filename.c_str(), ATIFF_STR(label));    \
         return false;\
     }
 
