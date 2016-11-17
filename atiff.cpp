@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.0            Time-stamp: <2016-11-17 03:47:49 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2016-11-18 03:02:06 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -231,7 +231,7 @@ bool atiff::load(string filename) {
     } else { //plane-major
         if(depth_ == ATIFF_1BIT_DEPTH) {
             const int nx8 = (nx_ + 7) / 8;
-            vector<ABYTE> tmp(nx8*ny_*nc_);
+            vector<uint8> tmp(nx8*ny_*nc_);
             for(int j = 0; j < ny_; j += jstep) {
                 int nrow = (j + jstep > ny_) ? ny_ - j : jstep;
                 tstrip_t   pos = TIFFComputeStrip(tif, j, 0);
@@ -244,7 +244,7 @@ bool atiff::load(string filename) {
             }
             for(int j = 0; j < ny_; ++j) {
             for(int i = 0; i < nx_; ++i) {
-                const ATIFF_BYTE unity = 0x80 >> (i % 8); //MSB2LSB
+                const uint8 unity = 0x80 >> (i % 8); //MSB2LSB
                 buf_[i + j*nx_] = (tmp[i/8 + j*nx8] & unity) ? 0xFF : 0;
             }
             }
@@ -305,7 +305,7 @@ bool atiff::save(string filename, int depth, int compression) const {
 
     // 描画データの書き込み
     if(ordering_ < 0) { //pixel-major
-        if(depth_ == ATIFF_1BIT_DEPTH) {
+        if(depth == ATIFF_1BIT_DEPTH) {
             ERRMSG("%s: 1-bit depth is invalid in pixel-major mode",
                    filename.c_str());
             return false;
@@ -319,13 +319,13 @@ bool atiff::save(string filename, int depth, int compression) const {
             }
         }
     } else { //plane-major
-        if(depth_ == ATIFF_1BIT_DEPTH) {
+        if(depth == ATIFF_1BIT_DEPTH) {
             const int nx8 = (nx_ + 7) / 8;
-            vector<ABYTE> tmp(nx8*ny_*nc_, 0);
+            vector<uint8> tmp(nx8*ny_*nc_, 0);
             for(int j = 0; j < ny_; ++j) {
             for(int i = 0; i < nx_; ++i) {
                 if(buf_[i + j*nx_] == 0) continue;
-                const ATIFF_BYTE unity = 0x80 >> (i % 8); //MSB2LSB
+                const uint8 unity = 0x80 >> (i % 8); //MSB2LSB
                 tmp[i/8 + j*nx8] |= unity;
             }
             }

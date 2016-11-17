@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.0            Time-stamp: <2016-11-17 03:43:27 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2016-11-17 05:54:18 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
