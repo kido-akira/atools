@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.1            Time-stamp: <2016-11-18 03:25:20 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2016-11-23 23:28:52 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -14,16 +14,8 @@ using namespace std;
 #include <tiff.h>
 #include <tiffio.h>
 
+#include "amisc.h"
 #include "atiff.h"
-
-inline void ERRMSG(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    char tmp[BUFSIZ];
-    vsnprintf(tmp, sizeof(tmp), fmt, args);
-    cerr << tmp << endl;
-    va_end(args);
-}
 
 #define ATIFF_STR(label)        #label
 #define ATIFF_TAG_CONCAT(label) TIFFTAG_ ## label
@@ -39,6 +31,8 @@ inline void ERRMSG(const char* fmt, ...) {
                filename.c_str(), ATIFF_STR(label));    \
         return false;\
     }
+
+namespace atools {
 
 //----------------------------------------------------------------------
 //  ATIFF : TIFF manipulate class
@@ -339,6 +333,8 @@ bool atiff::save(string filename, int depth, int compression) const {
     TIFFClose(tif);
     return true;
 }
+
+} //namespace atools
 
 //----------------------------------------------------------------------
 //  End Of File

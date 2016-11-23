@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.1            Time-stamp: <2016-11-17 05:54:18 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2016-11-23 23:09:30 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -29,6 +29,8 @@
 #define APHOTOMETRIC_SEPARATED     5 // CMYK
 #define ACOMPRESSION_NONE          1 // 無圧縮(ダンプモード)
 #define ACOMPRESSION_LZW           5 // Lempel-Ziv & Welch圧縮
+
+namespace atools {
 
 //----------------------------------------------------------------------
 //  ATIFF : TIFF manipulate class
@@ -116,6 +118,8 @@ public:
 #undef AINT16
 #undef AINT32
 #undef AFLOAT
+
+} //namespace atools
 
 #endif //ATIFF_INCLUDED
 

@@ -1,18 +1,23 @@
 #include <iostream>
 using namespace std;
 
-#include "atiff.h"
+#include "atools.h"
 
 int main(int argc, char* argv[]) {
     if(argc < 3) {
-        cerr << "usage: " << argv[0] << " input.tif output.tif" << endl;
+        ERRMSG("usage: %s input.tif output.tif", argv[0]);
         return 1;
     }
-    atiff obj1(argv[1]);
+    string  infile = argv[1];
+    string outfile = argv[2];
+
+    atiff obj1;
+    if(!obj1.load(infile)) return 2;
     int nx = obj1.nx();
     int ny = obj1.ny();
     int nc = obj1.nc();
     atiff obj2(nx, ny); //gray-scale
+
     for(int iy = 0; iy < ny; ++iy) {
     for(int ix = 0; ix < nx; ++ix) {
         int sum = 0;
@@ -22,6 +27,7 @@ int main(int argc, char* argv[]) {
         obj2(ix, iy) = sum / nc;
     }
     }
-    obj2.save(argv[2], 1, ACOMPRESSION_NONE);
+    if(!obj2.save(outfile, 1, ACOMPRESSION_NONE)) return 3;
+
     return 0;
 }
