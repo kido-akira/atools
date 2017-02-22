@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
         obj2(ix, iy) = sum / nc;
     }
     }
-    if(!obj2.save(outfile, 1, ACOMPRESSION_NONE)) return 3;
+    if(!obj2.save(outfile1)) return 3;
 
     return 0;
 }

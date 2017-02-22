@@ -72,6 +72,7 @@ string strfmt(const char* fmt, ...) {
 int tokenizer(const std::string& text,
               std::vector<std::string>& token,
               const char delimiter) {
+    token.clear();
    const int imax = (int)text.size();
    int ipos  = 0;
    int istep = 1;
