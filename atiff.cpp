@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------
-//  A TIFF ver.1.0.1            Time-stamp: <2016-11-23 23:28:52 kido>
+//  A TIFF ver.1.0.1            Time-stamp: <2017-03-04 06:53:28 kido>
 //
 //      Copyright (c) 2016 Akira KIDO
 //      https://github.com/kido-akira/atools
@@ -150,12 +150,12 @@ bool atiff::load(string filename) {
     nc_ = (int)ncolors_;
     // 圧縮形式
     ATIFF_GET_SAFE(COMPRESSION,     compression_);
-    if((compression_ != COMPRESSION_NONE)&&
-       (compression_ != COMPRESSION_LZW)) {
-        ERRMSG("%s: unsupported COMPRESSION type '%u'",
-               filename.c_str(), compression_);
-        return false;
-    }
+ // if((compression_ != COMPRESSION_NONE)&&
+ //    (compression_ != COMPRESSION_LZW)) {
+ //     ERRMSG("%s: unsupported COMPRESSION type '%u'",
+ //            filename.c_str(), compression_);
+ //     return false;
+ // }
     // 画像原点の取得
  // ATIFF_GET_SAFE(ORIENTATION,     orientation_);
     if(orientation_ != ORIENTATION_TOPLEFT) {
@@ -178,7 +178,7 @@ bool atiff::load(string filename) {
     }
     // x方向解像度[DPI]
  // ATIFF_GET_SAFE(XRESOLUTION,     xreso_      );
- // y方向解像度[DPI]
+    // y方向解像度[DPI]
  // ATIFF_GET_SAFE(YRESOLUTION,     yreso_      );
     // 解像度の単位
  // ATIFF_GET_SAFE(RESOLUTIONUNIT,  resounit_   );
